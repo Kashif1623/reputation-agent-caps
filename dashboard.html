@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Agent Spending Caps Dashboard</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 40px; }
+    h1 { margin-bottom: 8px; }
+    .subtitle { color: #94a3b8; margin-bottom: 32px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .card { background: #1e293b; border-radius: 12px; padding: 20px; border-left: 6px solid #64748b; }
+    .Elite { border-left-color: #fbbf24; }
+    .Expert { border-left-color: #22d3ee; }
+    .Trusted { border-left-color: #4ade80; }
+    .Newbie { border-left-color: #64748b; }
+    .score { font-size: 1.4rem; font-weight: 600; }
+    button { margin-top: 12px; background: #334155; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; }
+    button:hover { background: #475569; }
+  </style>
+</head>
+<body>
+  <h1>Reputation-Scaled Spending Caps</h1>
+  <p class="subtitle">Advanced prototype — tiers update based on reputation</p>
+  <div class="grid" id="grid"></div>
+
+  <script>
+    const agents = [
+      { name: "NewAgent", score: 80, tier: "Newbie" },
+      { name: "GrowingAgent", score: 340, tier: "Trusted" },
+      { name: "ProAgent", score: 680, tier: "Expert" },
+      { name: "EliteAgent", score: 910, tier: "Elite" }
+    ];
+
+    function getCaps(score) {
+      if (score >= 800) return { single: 16, daily: 200, tier: "Elite" };
+      if (score >= 600) return { single: 10, daily: 125, tier: "Expert" };
+      if (score >= 300) return { single: 6, daily: 75, tier: "Trusted" };
+      return { single: 2, daily: 25, tier: "Newbie" };
+    }
+
+    function render() {
+      const grid = document.getElementById("grid");
+      grid.innerHTML = agents.map((a, i) => {
+        const caps = getCaps(a.score);
+        return `
+          <div class="card ${caps.tier}">
+            <div class="score">${a.name}</div>
+            <p>Score: <b>${a.score}</b> • ${caps.tier}</p>
+            <p>Max Single: <b>$${caps.single}</b><br>Daily Budget: <b>$${caps.daily}</b></p>
+            <button onclick="boost(${i})">+ Successful Job</button>
+            <button onclick="penalize(${i})">Failed Job</button>
+          </div>`;
+      }).join("");
+    }
+
+    function boost(i) {
+      agents[i].score = Math.min(1000, agents[i].score + 80);
+      render();
+    }
+    function penalize(i) {
+      agents[i].score = Math.max(0, agents[i].score - Math.floor(agents[i].score * 0.15));
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>
